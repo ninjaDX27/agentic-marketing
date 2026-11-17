@@ -14,6 +14,7 @@
    <button class="nav active" data-page="dashboard"><span>▦</span> Dashboard</button>
    <button class="nav" data-page="explorer"><span>⌁</span> Trend Explorer</button>
    <button class="nav" data-page="studio"><span>✦</span> Content Studio</button>
+   <button class="nav" data-page="planner"><span>▣</span> Planner</button>
    <button class="nav" data-page="sources"><span>◉</span> Fontes e cobertura</button>
   </nav>
   <div class="side-bottom"><span class="live"></span><div><b>Monitorização editorial</b><small>Feeds públicos · Portugal</small></div></div>
@@ -45,9 +46,10 @@
   <section class="page" id="studio">
    <div class="studio-head"><div><span class="eyebrow">CREATE / REVIEW</span><h2>Content Studio</h2><p class="subtle">Escreve, revê e prepara conteúdos com ligação à fonte original.</p></div><span class="pill">Publicação manual</span></div>
    <div class="two-cols studio-grid"><div class="panel"><div class="panel-head"><h3>Biblioteca de rascunhos</h3></div><div id="idea-list" class="stack"><div class="empty">Ainda não existem rascunhos.</div></div></div>
-   <div class="panel"><div class="panel-head"><h3>Editor de conteúdo</h3></div><form id="editor-form" class="form"><input type="hidden" id="edit-id"><label>Título / hook<input class="input" id="edit-hook" required maxlength="400"></label><label>Texto<textarea class="input" id="edit-body" rows="12" required maxlength="4000"></textarea></label><label>CTA<input class="input" id="edit-cta" maxlength="350"></label><label>Estado<select class="input" id="edit-status"><option>Backlog</option><option>Rascunho</option><option>Pronto</option><option>Publicado</option></select></label><div class="editor-actions"><button type="submit" class="btn primary">Guardar alterações</button><button type="button" class="btn outline" id="copy-idea">Copiar texto</button></div><p id="editor-hint" class="subtle">Seleciona um rascunho ou gera um no Trend Explorer.</p></form></div></div>
+   <div class="panel"><div class="panel-head"><h3>Editor de conteúdo</h3></div><form id="editor-form" class="form"><input type="hidden" id="edit-id"><label>Título / hook<input class="input" id="edit-hook" required maxlength="400"></label><label>Texto<textarea class="input" id="edit-body" rows="12" required maxlength="4000"></textarea></label><label>CTA<input class="input" id="edit-cta" maxlength="350"></label><label>Data de publicação planeada<input class="input" type="date" id="edit-scheduled"></label><label>Estado<select class="input" id="edit-status"><option>Backlog</option><option>Rascunho</option><option>Pronto</option><option>Publicado</option></select></label><div class="editor-actions"><button type="submit" class="btn primary">Guardar alterações</button><button type="button" class="btn outline" id="copy-idea">Copiar texto</button></div><p id="editor-hint" class="subtle">Seleciona um rascunho ou gera um no Trend Explorer.</p></form></div></div>
   </section>
-  <section class="page" id="sources">
+  <section class="page" id="planner"><div class="panel"><div class="panel-head"><div><span class="eyebrow">PLAN / DELIVER</span><h2>Calendário editorial</h2></div><span class="pill">Planeamento manual</span></div><p class="subtle">Associa datas aos rascunhos no Content Studio. A plataforma não publica automaticamente nas redes sociais.</p><div id="planner-list" class="stack planner-list"></div></div></section>
+ <section class="page" id="sources">
    <div class="panel"><div class="panel-head"><div><span class="eyebrow">TRANSPARÊNCIA</span><h2>Fontes de dados</h2></div><a class="btn outline" href="/api/export.csv">↓ Exportar CSV</a></div><p class="subtle">A recolha usa RSS/Atom público. Uma notícia não prova uma tendência viral. A atualização pode falhar por bloqueios de rede ou alterações nos feeds.</p><div id="source-list" class="source-list"></div></div>
    <div class="notice secondary"><span class="notice-ico">ⓘ</span><div><b>O que ainda não está integrado</b><p>Métricas privadas de Instagram, LinkedIn e TikTok, publicação automática, pagamentos, equipas e relatórios de desempenho. Essas funções exigem integrações e permissões oficiais.</p></div></div>
   </section>
