@@ -80,6 +80,11 @@ def test_ideas_crud(service):
                 json={"status": "Pronto", "hook": "Uma mudança relevante"})
     assert saved.status_code == 200
     assert req(service, "PATCH", "/api/ideas/" + str(pk),
+               json={"scheduled_for": "2026-11-30"}).status_code == 200
+    assert req(service, "GET", "/api/ideas").json()["items"][0]["scheduled_for"] == "2026-11-30"
+    assert req(service, "PATCH", "/api/ideas/" + str(pk),
+               json={"scheduled_for": "2026-99-99"}).status_code == 422
+    assert req(service, "PATCH", "/api/ideas/" + str(pk),
                json={"status": "Erro"}).status_code == 422
 
 
