@@ -14,6 +14,26 @@
 - SQLite, proteção HTTP Basic (HTTPS obrigatório em produção), limites de atualização, Docker, Render Blueprint, testes e workflow GitHub Actions para atualização diária;
 - modo DEMO local claramente assinalado; desativado em produção.
 
+## Trend Explorer — ecrã interativo
+
+O explorador oferece dois painéis: lista de sinais com pesquisa/filtros à esquerda e um inspetor à direita. Ao selecionar uma notícia, mostra:
+
+- título, resumo, fonte original, tipo de fonte, data e indicador DEMO (se aplicável);
+- score editorial (0–100) e decomposição visível: atualidade (40), fonte (30), relevância textual (20) e aplicabilidade estimada (10);
+- **hipóteses estratégicas para avaliar**, assinaladas como hipóteses — não como factos verificados ou previsão de viralidade;
+- ações efetivas: **Guardar**, **Gerar conteúdo**, **Adicionar ao Planner** com data escolhida, e **Abrir fonte original**;
+- sugestões de conteúdo que abrem o Content Studio com o canal escolhido.
+
+A criação para o Planner usa o backend de rascunhos, grava a data e marca o estado como Backlog. Não envia publicações para redes sociais. A data e o texto podem ser editados no Content Studio.
+
+### Testes
+
+- `tests/test_app.py`: testes automatizados da API, validação, persistência e recolha RSS simulada;
+- `tests/ui_smoke.py`: teste real em Chromium de seleção, filtros, favoritos, geração de rascunho e Planner;
+- `.github/workflows/ci.yml` e `.github/workflows/ui-smoke.yml`: validação automatizada em cada alteração relevante.
+
+**Nota:** o design é adaptado à informação disponível. Não inventamos métricas privadas de TikTok, LinkedIn ou Instagram nem tendências virais.
+
 ## Arranque local
 
 Requer Python 3.11+:
