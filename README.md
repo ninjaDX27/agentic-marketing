@@ -18,46 +18,46 @@
 
 Requer Python 3.11+:
 
-\`\`\`bash
+```bash
 python -m venv .venv
 source .venv/bin/activate  # no Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app:app --reload --host 127.0.0.1 --port 8000
-\`\`\`
+```
 
 Abre **http://127.0.0.1:8000**. Em local, sem password, funciona com dados DEMO e permite recolher notícias reais com **Atualizar fontes**.
 
 ## Deploy em Render (com persistência)
 
-1. No Render, escolhe **New → Blueprint** e liga o repositório \`ninjaDX27/agentic-marketing\`.
-2. O ficheiro \`render.yaml\` prepara um web service Docker **pago** com disco persistente em \`/srv/data\`. Sem disco persistente, o SQLite perde dados em cada deploy ou reinício.
-3. Introduz \`APP_PASSWORD\` com **pelo menos 16 caracteres**, como secret solicitado na criação. Opcional: configura \`OPENAI_API_KEY\` e \`OPENAI_MODEL\` nos Environment Variables (nunca os coloques em Git).
-4. Quando o serviço estiver a funcionar, verifica \`https://<o-teu-dominio>/api/health\`. A interface exige \`admin\` e a password definida.
-5. Em GitHub → Settings → Secrets and variables → Actions, cria \`RADAR_URL\` (URL HTTPS sem barra final) e \`APP_PASSWORD\` (a mesma password) para o workflow \`.github/workflows/daily-sync.yml\`. Executa manualmente o workflow uma vez.
+1. No Render, escolhe **New → Blueprint** e liga o repositório `ninjaDX27/agentic-marketing`.
+2. O ficheiro `render.yaml` prepara um web service Docker **pago** com disco persistente em `/srv/data`. Sem disco persistente, o SQLite perde dados em cada deploy ou reinício.
+3. Introduz `APP_PASSWORD` com **pelo menos 16 caracteres**, como secret solicitado na criação. Opcional: configura `OPENAI_API_KEY` e `OPENAI_MODEL` nos Environment Variables (nunca os coloques em Git).
+4. Quando o serviço estiver a funcionar, verifica `https://<o-teu-dominio>/api/health`. A interface exige `admin` e a password definida.
+5. Em GitHub → Settings → Secrets and variables → Actions, cria `RADAR_URL` (URL HTTPS sem barra final) e `APP_PASSWORD` (a mesma password) para o workflow `.github/workflows/daily-sync.yml`. Executa manualmente o workflow uma vez.
 6. Ativa deploys automáticos do Render a partir do branch main. A recolha agendada usa a hora Europe/Lisbon, sujeita a atrasos do GitHub Actions.
 
 A configuração no repositório não cria uma conta Render nem publica automaticamente um domínio: requer a ligação do teu Render, as secrets e ativação de GitHub Actions.
 
 ## Ambiente
 
-\`\`\`text
+```text
 APP_ENV=development
 APP_PASSWORD=
 DATABASE_PATH=./data/radar.db
 SEED_DEMO=true
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
-\`\`\`
+```
 
-Em \`APP_ENV=production\`, a app recusa arrancar sem password com pelo menos 16 caracteres. A IA só é chamada no servidor. Não há publicação automática nas plataformas. Não uses scraping não autorizado.
+Em `APP_ENV=production`, a app recusa arrancar sem password com pelo menos 16 caracteres. A IA só é chamada no servidor. Não há publicação automática nas plataformas. Não uses scraping não autorizado.
 
 ## Desenvolvimento
 
-\`\`\`bash
+```bash
 pytest -q
 docker build -t radar-social .
 docker run -p 8000:8000 -e APP_ENV=production -e APP_PASSWORD="uma-frase-muito-segura" -v radar_data:/srv/data radar-social
-\`\`\`
+```
 
 ### Segurança e limites
 
