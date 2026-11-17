@@ -10,7 +10,7 @@
 - score 0–100 para **prioridade editorial**, com justificações; fontes, datas e links;
 - pesquisa, filtros, favoritos, inclusão manual de links, atualização sob pedido;
 - Content Studio: rascunhos locais com regras ou IA opcional através de chave mantida no servidor;
-- estados editoriais: Backlog, Rascunho, Pronto, Publicado; exportação CSV;
+- estados editoriais: Backlog, Rascunho, Pronto, Publicado; calendário de publicação manual e exportação CSV;
 - SQLite, proteção HTTP Basic (HTTPS obrigatório em produção), limites de atualização, Docker, Render Blueprint, testes e workflow GitHub Actions para atualização diária;
 - modo DEMO local claramente assinalado; desativado em produção.
 
