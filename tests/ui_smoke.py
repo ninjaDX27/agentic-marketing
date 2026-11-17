@@ -1,6 +1,6 @@
 """Smoke end-to-end do Trend Explorer. Executar com uvicorn em http://127.0.0.1:8017."""
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 BASE = "http://127.0.0.1:8017"
 
@@ -31,7 +31,7 @@ def main():
         page.locator("#trend-inspector button[data-save]").click()
         page.locator("#trend-inspector button[data-save]").filter(has_text="Guardado").wait_for()
         page.locator("#saved-only").check()
-        assert page.locator("#trend-list .signal").count() == 1
+        expect(page.locator("#trend-list .signal")).to_have_count(1)
         page.locator("#saved-only").uncheck()
 
         # Gerar um rascunho e verificar persistência no Content Studio.
@@ -56,17 +56,15 @@ def main():
         page.locator("#plan-date").fill("2026-12-09")
         page.locator("#plan-form button[type=submit]").click()
         page.locator("#planner.active").wait_for()
-        assert page.locator("#planner-list .idea-item").count() >= 2
+        expect(page.locator("#planner-list .idea-item")).to_have_count(2)
 
         # Pesquisa e filtro continuam a funcionar.
         page.locator('.sidebar button[data-page="explorer"]').click()
         page.locator("#platform-filter").select_option("Instagram")
-        page.wait_for_timeout(350)
-        assert page.locator("#trend-list .signal").count() == 1
+        expect(page.locator("#trend-list .signal")).to_have_count(1)
         page.locator("#search").fill("sem-correspondencia-xyz")
-        page.wait_for_timeout(450)
-        assert page.locator("#trend-list .signal").count() == 0
-        assert "Sem sinais" in page.locator("#trend-inspector").inner_text()
+        expect(page.locator("#trend-list .signal")).to_have_count(0)
+        expect(page.locator("#trend-inspector")).to_contain_text("Sem sinais")
 
         # Captura para inspeção no CI.
         page.locator("#search").fill("")
