@@ -1,0 +1,45 @@
+name: E2E Trend Explorer
+
+on:
+  push:
+    paths:
+      - "app.py"
+      - "static/**"
+      - "tests/ui_smoke.py"
+      - ".github/workflows/ui-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt "playwright>=1.55,<2"
+      - run: python -m playwright install --with-deps chromium
+      - name: Smoke test Chrome/Chromium
+        env:
+          APP_ENV: development
+          DATABASE_PATH: /tmp/radar-social-browser.db
+          SEED_DEMO: "true"
+        run: |
+          set -e
+          uvicorn app:app --host 127.0.0.1 --port 8017 > /tmp/radar-server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8017/api/health > /dev/null; then break; fi
+            sleep 1
+          done
+          python tests/ui_smoke.py
+      - name: Captura do ecrã
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-social-trend-explorer
+          path: /tmp/radar-social-trend-explorer.png
+          if-no-files-found: ignore
+      - name: Logs do servidor em caso de falha
+        if: failure()
+        run: cat /tmp/radar-server.log
