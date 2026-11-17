@@ -50,7 +50,7 @@ function signalCard(t,detailed=false){
     +'<div class="signal-head"><h3>'+esc(t.title)+'</h3><span class="score '+(score<75?"mid":"")+'" title="Prioridade editorial, não viralidade">'+score+'/100</span></div>'
     +(detailed?'<p>'+esc(t.summary||"Sem resumo disponível.")+'</p>':"")
     +'<div class="signal-meta">'+tags+(t.demo?'<span class="tag demo">DEMO</span>':"")
-    +'<span>'+esc(t.source)+'</span><span>·</span><span>'+esc(date(t.published))+'</span></div>'
+    +'<span>'+esc(t.source)+'</span><span>·</span><span>'+(t.source_type==='Manual'?'Registado ':'Publicado ')+esc(date(t.published))+'</span></div>'
     +(detailed?'<div class="factors">'+esc(factorText)+'</div>':"")
     +'<div class="signal-actions"><div><button class="micro" data-generate="'+number(t.id)+'">✦ Criar conteúdo</button>'
     +'<button class="micro" data-save="'+number(t.id)+'">'+(t.saved?"★ Guardado":"☆ Guardar")+'</button></div>'
