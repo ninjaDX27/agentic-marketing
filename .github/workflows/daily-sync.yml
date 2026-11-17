@@ -1,0 +1,21 @@
+name: Recolha diária (08:10 Portugal)
+on:
+  schedule:
+    - cron: '10 8 * * *'
+      timezone: 'Europe/Lisbon'
+  workflow_dispatch:
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recolher RSS no servidor
+        env:
+          RADAR_URL: ${{ secrets.RADAR_URL }}
+          APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+        run: |
+          set -eu
+          test -n "$RADAR_URL" || (echo "Configura RADAR_URL"; exit 1)
+          test -n "$APP_PASSWORD" || (echo "Configura APP_PASSWORD"; exit 1)
+          case "$RADAR_URL" in https://*) ;; *) echo "RADAR_URL deve usar HTTPS"; exit 1;; esac
+          curl --fail --show-error --silent --retry 2 --connect-timeout 10 --max-time 110 \
+            -u "admin:$APP_PASSWORD" -X POST "${RADAR_URL%/}/api/refresh"
