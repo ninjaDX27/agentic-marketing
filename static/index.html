@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-PT"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090e1a"><meta name="description" content="Radar Social AI: inteligência editorial e tendências de redes sociais para Portugal.">
+<title>Radar Social AI — Intelligence Workspace</title>
+<link rel="stylesheet" href="/static/styles.css">
+<script src="/static/main.js" defer></script>
+</head><body>
+<div class="shell">
+ <aside class="sidebar">
+  <div class="logo"><span class="logo-icon">◈</span><span>RADAR <b>SOCIAL</b><small>AI Intelligence Workspace</small></span></div>
+  <div class="side-section">WORKSPACE</div>
+  <nav aria-label="Navegação principal">
+   <button class="nav active" data-page="dashboard"><span>▦</span> Dashboard</button>
+   <button class="nav" data-page="explorer"><span>⌁</span> Trend Explorer</button>
+   <button class="nav" data-page="studio"><span>✦</span> Content Studio</button>
+   <button class="nav" data-page="sources"><span>◉</span> Fontes e cobertura</button>
+  </nav>
+  <div class="side-bottom"><span class="live"></span><div><b>Monitorização editorial</b><small>Feeds públicos · Portugal</small></div></div>
+ </aside>
+ <main class="main">
+  <header class="top">
+   <div><span class="eyebrow">INTELLIGENCE / <span id="crumb">OVERVIEW</span></span><h1 id="page-title">O teu radar de social media</h1><p id="subtitle">Do sinal à estratégia. Descobre, analisa e cria.</p></div>
+   <div class="header-actions"><span class="date-pill" id="today"></span><button id="refresh" class="btn primary">↻ Atualizar fontes</button></div>
+  </header>
+  <section class="page active" id="dashboard">
+   <div class="notice"><span class="notice-ico">✧</span><div><b>O que importa, não apenas o que está a acontecer.</b><p>Prioridade editorial ≠ viralidade. Cada sinal inclui fonte, data e justificação. Nenhuma publicação é feita automaticamente.</p></div></div>
+   <div class="stats">
+    <div class="stat"><span>NOTÍCIAS REAIS</span><strong id="stat-total">—</strong><small>Fontes públicas</small></div>
+    <div class="stat"><span>ÚLTIMOS 7 DIAS</span><strong id="stat-weekly">—</strong><small>Publicações recentes</small></div>
+    <div class="stat"><span>ALTA PRIORIDADE</span><strong id="stat-priority">—</strong><small>Score editorial ≥ 75</small></div>
+    <div class="stat"><span>RASCUNHOS</span><strong id="stat-ideas">—</strong><small>Content Studio</small></div>
+   </div>
+   <div class="two-cols"><div class="panel"><div class="panel-head"><div><span class="eyebrow">OPORTUNIDADES</span><h2>Top sinais editoriais</h2></div><button class="text-btn" data-page="explorer">Ver todas →</button></div><div id="top-trends" class="stack"><div class="empty">A carregar...</div></div></div>
+   <div class="panel"><div class="panel-head"><div><span class="eyebrow">AÇÃO</span><h2>Briefing rápido</h2></div></div><p class="subtle">Um resumo rastreável das oportunidades prioritárias, para transformar em decisões e conteúdo.</p><div class="briefing" id="briefing">A carregar sinais...</div><button class="btn outline wide" id="copy-brief">Copiar briefing</button><div class="sync">Última consulta às fontes: <b id="sync-time">Ainda não realizada</b></div></div></div>
+  </section>
+  <section class="page" id="explorer">
+   <div class="panel"><div class="panel-head responsive"><div><span class="eyebrow">EXPLORE / SEARCH / ACT</span><h2>Trend Explorer</h2></div><button class="btn outline" id="manual-button">+ Adicionar sinal</button></div>
+    <div class="filters"><input id="search" class="input" placeholder="Pesquisar notícias, plataformas, temas..." aria-label="Pesquisar tendências">
+     <select id="platform-filter" class="input" aria-label="Filtrar por plataforma"><option>Todas</option><option>Instagram</option><option>TikTok</option><option>LinkedIn</option><option>YouTube</option><option>Facebook</option><option>Threads</option><option>Geral</option></select>
+     <select id="date-filter" class="input" aria-label="Intervalo"><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option><option value="365">1 ano</option></select>
+     <label class="check"><input type="checkbox" id="saved-only"> Só guardados</label>
+    </div><div class="result-row"><span id="result-count">—</span><span class="subtle">Ordenado por prioridade editorial</span></div><div id="trend-list" class="trend-list"></div></div>
+  </section>
+  <section class="page" id="studio">
+   <div class="studio-head"><div><span class="eyebrow">CREATE / REVIEW</span><h2>Content Studio</h2><p class="subtle">Escreve, revê e prepara conteúdos com ligação à fonte original.</p></div><span class="pill">Publicação manual</span></div>
+   <div class="two-cols studio-grid"><div class="panel"><div class="panel-head"><h3>Biblioteca de rascunhos</h3></div><div id="idea-list" class="stack"><div class="empty">Ainda não existem rascunhos.</div></div></div>
+   <div class="panel"><div class="panel-head"><h3>Editor de conteúdo</h3></div><form id="editor-form" class="form"><input type="hidden" id="edit-id"><label>Título / hook<input class="input" id="edit-hook" required maxlength="400"></label><label>Texto<textarea class="input" id="edit-body" rows="12" required maxlength="4000"></textarea></label><label>CTA<input class="input" id="edit-cta" maxlength="350"></label><label>Estado<select class="input" id="edit-status"><option>Backlog</option><option>Rascunho</option><option>Pronto</option><option>Publicado</option></select></label><div class="editor-actions"><button type="submit" class="btn primary">Guardar alterações</button><button type="button" class="btn outline" id="copy-idea">Copiar texto</button></div><p id="editor-hint" class="subtle">Seleciona um rascunho ou gera um no Trend Explorer.</p></form></div></div>
+  </section>
+  <section class="page" id="sources">
+   <div class="panel"><div class="panel-head"><div><span class="eyebrow">TRANSPARÊNCIA</span><h2>Fontes de dados</h2></div><a class="btn outline" href="/api/export.csv">↓ Exportar CSV</a></div><p class="subtle">A recolha usa RSS/Atom público. Uma notícia não prova uma tendência viral. A atualização pode falhar por bloqueios de rede ou alterações nos feeds.</p><div id="source-list" class="source-list"></div></div>
+   <div class="notice secondary"><span class="notice-ico">ⓘ</span><div><b>O que ainda não está integrado</b><p>Métricas privadas de Instagram, LinkedIn e TikTok, publicação automática, pagamentos, equipas e relatórios de desempenho. Essas funções exigem integrações e permissões oficiais.</p></div></div>
+  </section>
+  <footer>RADAR SOCIAL AI <span>·</span> Dados verificáveis, decisões melhores <span>·</span> v1.0</footer>
+ </main>
+</div>
+<dialog id="manual-modal" class="modal"><form id="manual-form" class="form"><div class="panel-head"><h3>Adicionar oportunidade</h3><button type="button" class="icon-btn" id="close-manual" aria-label="Fechar">✕</button></div><label>Título<input class="input" name="title" minlength="8" maxlength="220" required></label><label>Link da fonte<input class="input" name="url" type="url" required placeholder="https://..."></label><label>Plataforma<select class="input" name="platform"><option>Geral</option><option>Instagram</option><option>TikTok</option><option>LinkedIn</option><option>YouTube</option><option>Facebook</option><option>Threads</option></select></label><label>Resumo<textarea class="input" name="summary" rows="3" maxlength="650"></textarea></label><button class="btn primary wide" type="submit">Guardar sinal</button></form></dialog>
+<dialog id="generate-modal" class="modal"><form id="generate-form" class="form"><div class="panel-head"><h3>Gerar conteúdo</h3><button type="button" class="icon-btn" id="close-generate" aria-label="Fechar">✕</button></div><input type="hidden" name="trend_id" id="generate-id"><p class="subtle" id="generate-title"></p><label>Plataforma<select class="input" name="platform"><option>LinkedIn</option><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>Facebook</option><option>Threads</option></select></label><label class="check"><input type="checkbox" name="use_ai" id="use-ai"> Usar IA (requer chave no servidor)</label><button class="btn primary wide" type="submit">Criar rascunho →</button></form></dialog>
+<div id="toast" role="status" aria-live="polite" class="toast" hidden></div>
+</body></html>
