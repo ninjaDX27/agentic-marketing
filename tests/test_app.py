@@ -123,3 +123,24 @@ def test_editorial_score_not_viral(service):
     assert 0 <= score <= 100
     assert sum(factors.values()) == score
     assert "atualidade" in factors
+
+
+def test_refresh_ingests_real_rss_and_removes_demo(service, monkeypatch):
+    from datetime import datetime, timezone
+    from email.utils import format_datetime
+    published = format_datetime(datetime.now(timezone.utc))
+    xml = ('<?xml version="1.0"?><rss version="2.0"><channel><title>Feed</title>'
+           '<item><title>New Instagram marketing feature</title>'
+           '<link>https://example.org/real-signal</link>'
+           '<description>Update for marketers.</description>'
+           '<pubDate>' + published + '</pubDate></item></channel></rss>').encode()
+    async def fake_get(self, url):
+        return httpx.Response(200, content=xml, request=httpx.Request("GET", url))
+    monkeypatch.setattr(httpx.AsyncClient, "get", fake_get)
+    response = req(service, "POST", "/api/refresh")
+    assert response.status_code == 200, response.text
+    assert response.json()["added"] == 1
+    signal = req(service, "GET", "/api/trends?q=Instagram").json()["items"]
+    assert len(signal) == 1
+    assert signal[0]["demo"] is False
+    assert req(service, "GET", "/api/dashboard").json()["stats"]["total"] == 1
