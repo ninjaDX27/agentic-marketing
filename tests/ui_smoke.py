@@ -14,7 +14,7 @@ def main():
 
         page.goto(BASE, wait_until="networkidle")
         assert page.locator("#dashboard.active").count() == 1
-        page.locator('button[data-page="explorer"]').click()
+        page.locator('.sidebar button[data-page="explorer"]').click()
         page.locator("#trend-list .signal").first.wait_for()
         assert page.locator("#trend-list .signal").count() == 3
         assert page.locator(".explorer-inspector .score-gauge").count() == 1
@@ -50,7 +50,7 @@ def main():
         assert "04/12/2026" in page.locator("#planner-list").inner_text() or "04 de dez." in page.locator("#planner-list").inner_text()
 
         # Ação direta "Adicionar ao Planner" cria novo rascunho planeado.
-        page.locator('button[data-page="explorer"]').click()
+        page.locator('.sidebar button[data-page="explorer"]').click()
         page.locator("#trend-inspector button[data-plan]").click()
         assert page.locator("#plan-modal").evaluate("(e) => e.open") is True
         page.locator("#plan-date").fill("2026-12-09")
@@ -59,7 +59,7 @@ def main():
         assert page.locator("#planner-list .idea-item").count() >= 2
 
         # Pesquisa e filtro continuam a funcionar.
-        page.locator('button[data-page="explorer"]').click()
+        page.locator('.sidebar button[data-page="explorer"]').click()
         page.locator("#platform-filter").select_option("Instagram")
         page.wait_for_timeout(350)
         assert page.locator("#trend-list .signal").count() == 1
