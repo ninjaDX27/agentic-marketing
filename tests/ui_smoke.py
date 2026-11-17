@@ -43,11 +43,15 @@ def main():
         assert page.locator("#edit-id").input_value().isdigit()
         page.locator("#edit-scheduled").fill("2026-12-04")
         page.locator("#edit-status").select_option("Pronto")
+        assert page.locator("#edit-hook").input_value()
+        assert page.locator("#edit-body").input_value()
+        assert page.locator("#editor-form").evaluate("(f) => f.checkValidity()")
         page.locator("#editor-form button[type=submit]").click()
+        expect(page.locator("#toast")).to_contain_text("Rascunho guardado.")
 
         page.locator('button[data-page="planner"]').click()
         page.locator("#planner.active").wait_for()
-        assert "04/12/2026" in page.locator("#planner-list").inner_text() or "04 de dez." in page.locator("#planner-list").inner_text()
+        expect(page.locator("#planner-list")).to_contain_text("04/12/2026")
 
         # Ação direta "Adicionar ao Planner" cria novo rascunho planeado.
         page.locator('.sidebar button[data-page="explorer"]').click()
