@@ -11,6 +11,7 @@ const pages = {
  dashboard:["OVERVIEW","O teu radar de social media","Do sinal à estratégia. Descobre, analisa e cria."],
  explorer:["TREND EXPLORER","Explorar oportunidades","Fontes verificáveis, filtros e prioridade explicável."],
  studio:["CONTENT STUDIO","Da tendência à publicação","Cria, edita e gere a produção editorial."],
+ planner:["CONTENT PLANNER","Calendário editorial","Organiza as publicações por data e acompanha estados."],
  sources:["DATA SOURCES","Fontes e transparência","O que estamos a recolher e com que limitações."]
 };
 
@@ -37,7 +38,7 @@ function navigate(page){
   document.querySelectorAll(".nav").forEach(node=>node.classList.toggle("active",node.dataset.page===page));
   $("crumb").textContent=pages[page][0];$("page-title").textContent=pages[page][1];$("subtitle").textContent=pages[page][2];
   if(page==="explorer")loadTrends().catch(errorText);
-  if(page==="studio")loadIdeas().catch(errorText);
+  if(page==="studio" || page==="planner")loadIdeas().catch(errorText);
   if(page==="sources")loadSources().catch(errorText);
 }
 function signalCard(t,detailed=false){
@@ -91,6 +92,15 @@ async function loadIdeas(){
     :'<div class="empty">Ainda não tens rascunhos. Escolhe uma tendência para começar.</div>';
   if(state.activeIdea && !state.ideas.some(i=>i.id===state.activeIdea)){state.activeIdea=null;}
   if(state.activeIdea)editIdea(state.activeIdea);
+  renderPlanner();
+}
+function renderPlanner(){
+  const element=$("planner-list");if(!element)return;
+  const ordered=[...state.ideas].sort((a,b)=>(a.scheduled_for||"9999").localeCompare(b.scheduled_for||"9999"));
+  element.innerHTML=ordered.length?ordered.map(i=>'<button class="idea-item" data-open-editor="'+number(i.id)+'"><b>'
+    +esc(i.hook)+'</b><small>'+esc(i.scheduled_for?date(i.scheduled_for+"T12:00:00"):"Sem data marcada")
+    +' · '+esc(i.platform)+' · '+esc(i.status)+'</small></button>').join("")
+    :'<div class="empty">Não há conteúdos. Gera um rascunho e atribui-lhe uma data.</div>';
 }
 function editIdea(id){
   const i=state.ideas.find(x=>x.id===Number(id));
@@ -101,6 +111,7 @@ function editIdea(id){
   $("edit-body").value=i.body;
   $("edit-cta").value=i.cta;
   $("edit-status").value=i.status;
+  $("edit-scheduled").value=i.scheduled_for||"";
   $("editor-hint").textContent="Fonte: "+i.trend_title+" · "+i.format+" · KPI: "+i.kpi;
   document.querySelectorAll(".idea-item").forEach(n=>n.classList.toggle("active",Number(n.dataset.idea)===i.id));
 }
@@ -137,6 +148,8 @@ function installEvents(){
       try{await api("/api/trends/"+saved.dataset.save+"/save","POST");await Promise.all([loadTrends(),loadDashboard()]);}
       catch(err){errorText(err);}finally{saved.disabled=false;}return;
     }
+    const openEditor=event.target.closest("[data-open-editor]");
+    if(openEditor){navigate("studio");editIdea(Number(openEditor.dataset.openEditor));return;}
     const idea=event.target.closest("[data-idea]");
     if(idea){editIdea(Number(idea.dataset.idea));return;}
   });
@@ -181,7 +194,8 @@ function installEvents(){
     if(!id)return notify("Primeiro, seleciona um rascunho.");
     try{
       await api("/api/ideas/"+id,"PATCH",{hook:$("edit-hook").value,body:$("edit-body").value,
-        cta:$("edit-cta").value,status:$("edit-status").value});
+        cta:$("edit-cta").value,status:$("edit-status").value,
+        scheduled_for:$("edit-scheduled").value});
       await loadIdeas();notify("Rascunho guardado.");
     }catch(err){errorText(err);}
   });
