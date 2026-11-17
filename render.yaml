@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: radar-social-ai
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    disk:
+      name: radar-social-data
+      mountPath: /srv/data
+      sizeGB: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_PATH
+        value: /srv/data/radar.db
+      - key: SEED_DEMO
+        value: "false"
+      - key: APP_PASSWORD
+        sync: false
