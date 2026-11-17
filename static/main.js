@@ -1,5 +1,5 @@
 "use strict";
-const state = { trends: [], ideas: [], top: [], sources: [], activeIdea: null, ai: false, brief: "" };
+const state = { trends: [], ideas: [], top: [], sources: [], activeIdea: null, selectedTrendId: null, ai: false, brief: "" };
 const $ = (id) => document.getElementById(id);
 const esc = (x) => String(x ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -72,16 +72,122 @@ async function loadDashboard(){
       +"\n\nNota: prioridade editorial não equivale a viralidade. Validar cada fonte antes de publicar.";
   $("briefing").textContent=state.brief;
 }
+
+const PLATFORM_STYLE = {
+ Instagram:["◎","instagram"],TikTok:["♪","tiktok"],LinkedIn:["in","linkedin"],
+ YouTube:["▶","youtube"],Facebook:["f","facebook"],Threads:["@","threads"],Geral:["⌁","geral"]
+};
+function sourceDate(t){
+ return (t.source_type==="Manual" ? "Registado " : "Publicado ")+date(t.published);
+}
+function primaryPlatform(t){
+ const names=t.platforms||[];
+ return names.find(p=>p!=="Geral"&&PLATFORM_STYLE[p])||"Geral";
+}
+function selectedTrend(){
+ return state.trends.find(t=>t.id===state.selectedTrendId)||null;
+}
+function trendListCard(t){
+ const platform=primaryPlatform(t), [icon,cls]=PLATFORM_STYLE[platform];
+ const selected=t.id===state.selectedTrendId;
+ return '<article class="signal'+(selected?' selected':'')+'">'
+  +'<div class="trend-topline"><button class="trend-entry" data-select="'+number(t.id)+'" aria-pressed="'+selected+'" aria-label="Detalhes: '+esc(t.title)+'">'
+  +'<span class="trend-avatar '+cls+'" aria-hidden="true">'+icon+'</span>'
+  +'<span class="trend-copy"><span class="trend-title">'+esc(t.title)+'</span>'
+  +'<span class="trend-excerpt">'+esc(t.summary||"Consulta a fonte original para conhecer os detalhes.")+'</span></span></button>'
+  +'<div class="trend-score-tools"><span class="score '+(number(t.score)<75?"mid":"")+'">'+number(t.score)+'/100</span>'
+  +'<button class="trend-star '+(t.saved?"is-saved":"")+'" data-save="'+number(t.id)+'" aria-label="'+(t.saved?"Remover dos guardados":"Guardar tendência")+'" title="'+(t.saved?"Remover dos guardados":"Guardar tendência")+'">'+(t.saved?"★":"☆")+'</button></div></div>'
+  +'<div class="trend-foot"><span>'+esc(t.source)+'</span><span>·</span><span>'+esc(date(t.published))+'</span>'
+  +(t.demo?'<span class="demo-flag">DEMO</span>':'')
+  +'<span class="tag">'+esc(platform)+'</span></div></article>';
+}
+function scoreBreakdown(t){
+ const factors=t.factors||{};
+ const items=[["Atualidade","atualidade",40],["Fonte","fonte",30],["Relevância","relevancia",20],["Aplicabilidade","aplicabilidade",10]];
+ return '<div class="score-factor-grid"><h3>Fatores da pontuação</h3>'+items.map(([label,key,max])=>{
+  const value=Math.max(0,Math.min(max,number(factors[key])));
+  return '<div class="score-factor"><label>'+label+'</label>'
+    +'<progress value="'+value+'" max="'+max+'" aria-label="'+label+': '+value+' de '+max+'"></progress>'
+    +'<b>'+value+'/'+max+'</b></div>';
+ }).join('')+'</div>';
+}
+function insightHypotheses(t){
+ const channel=primaryPlatform(t);
+ const name=channel==="Geral"?"redes sociais":channel;
+ return [
+  'Esta notícia pode alterar as decisões de formato, distribuição ou posicionamento de marcas que utilizam '+name+'.',
+  'Vale a pena verificar a publicação original e confirmar se a novidade já está disponível em Portugal antes de criar conteúdo.',
+  'Uma hipótese de teste: adaptar um conteúdo sobre o tema e acompanhar cliques, alcance e interações, comparando com a linha de base.'
+ ];
+}
+function renderInspector(){
+ const t=selectedTrend(), host=$("trend-inspector");
+ if(!host)return;
+ if(!t){
+  host.innerHTML='<div class="empty">Sem sinais para estes filtros. Atualiza as fontes ou alarga o intervalo para começar.</div>';
+  return;
+ }
+ const sc=Math.max(0,Math.min(100,number(t.score)));
+ const radius=55,circ=2*Math.PI*radius,dash=circ*sc/100;
+ const label=primaryPlatform(t);
+ const suggestions=[
+  ["LinkedIn","Post: 3 perguntas que esta novidade levanta para quem gere marketing."],
+  ["Instagram","Carrossel: o que verificar antes de aplicar esta mudança à tua marca."],
+  ["TikTok","Vídeo curto: uma hipótese de teste e o KPI para avaliar o resultado."]
+ ];
+ const metadata='<div class="inspector-metadata"><strong>'+esc(t.source)+'</strong>'
+  +'<span class="tag">'+esc(t.source_type||"Não classificada")+'</span>'
+  +'<span>'+esc(sourceDate(t))+'</span>'
+  +(t.demo?'<span class="tag demo">DEMO</span>':'')
+  +'<a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">Abrir fonte original ↗</a></div>';
+ host.innerHTML='<h2 class="inspector-heading">'+esc(t.title)+'</h2>'+metadata
+  +'<p class="inspector-summary">'+esc(t.summary||"Sem resumo fornecido. Consulta a fonte original antes de formar conclusões.")+'</p>'
+  +'<div class="score-analysis">'
+  +'<div class="score-gauge"><svg viewBox="0 0 140 140" role="img" aria-label="Prioridade editorial '+sc+' de 100">'
+  +'<circle class="track" cx="70" cy="70" r="'+radius+'"></circle>'
+  +'<circle class="fill" cx="70" cy="70" r="'+radius+'" stroke-dasharray="'+dash.toFixed(2)+' '+circ.toFixed(2)+'"></circle></svg>'
+  +'<div class="score-center"><strong>'+sc+'<span>/100</span></strong><small>Prioridade<br>editorial</small></div></div>'
+  +scoreBreakdown(t)+'</div>'
+  +'<p class="analysis-caveat">Pontuação heurística calculada com dados do título, data e origem. Não representa popularidade, impacto comprovado nem verificação independente.</p>'
+  +'<section class="inspector-section"><h3>◎ Porque pode importar</h3><p class="subtle">Hipóteses editoriais a validar — não conclusões sobre esta notícia.</p>'
+  +'<ul class="hypotheses">'+insightHypotheses(t).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></section>'
+  +'<section class="inspector-section"><h3>✧ Ações</h3><div class="inspector-actions">'
+  +'<button class="btn primary" data-generate="'+number(t.id)+'">✦ Gerar conteúdo</button>'
+  +'<button class="btn outline" data-save="'+number(t.id)+'">'+(t.saved?'★ Guardado':'☆ Guardar')+'</button>'
+  +'<button class="btn outline" data-plan="'+number(t.id)+'">▦ Adicionar ao Planner</button>'
+  +'<a class="btn outline" href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">↗ Fonte original</a>'
+  +'</div></section>'
+  +'<div class="suggestion-box"><h3>✧ Sugestões de conteúdo</h3>'
+  +'<p class="subtle">Modelos editoriais, não conteúdos já validados. Seleciona um canal para criar o rascunho.</p>'
+  +suggestions.map(([platform,text])=>'<button class="suggestion-btn" data-generate="'+number(t.id)+'" data-platform="'+esc(platform)+'"><b>'+esc(platform)+'</b><span>'+esc(text)+'</span> →</button>').join('')
+  +'</div><div class="disclaimer-bar">ⓘ Prioridade editorial ≠ viralidade · Verifica a fonte original antes de publicar.</div>';
+}
+function renderTrends(){
+ const host=$("trend-list");
+ if(!host)return;
+ if(state.selectedTrendId===null || !state.trends.some(t=>t.id===state.selectedTrendId)){
+   state.selectedTrendId=state.trends.length ? state.trends[0].id : null;
+ }
+ $("result-count").textContent=state.trends.length+" sinais encontrados · ordenados por prioridade editorial";
+ host.innerHTML=state.trends.length?state.trends.map(trendListCard).join("")
+   :'<div class="empty">Sem resultados para estes filtros. Experimenta alargar o intervalo.</div>';
+ renderInspector();
+}
+function selectTrend(id){
+ if(!state.trends.some(t=>t.id===id))return;
+ state.selectedTrendId=id;renderTrends();
+ if(window.matchMedia("(max-width:900px)").matches){
+   $("trend-inspector").scrollIntoView({behavior:"smooth",block:"start"});
+ }
+}
 async function loadTrends(){
-  const query=new URLSearchParams({
-    q:$("search").value,platform:$("platform-filter").value,days:$("date-filter").value,
-    saved:$("saved-only").checked?"true":"false"
-  });
-  const data=await api("/api/trends?"+query.toString());
-  state.trends=data.items||[];
-  $("result-count").textContent=state.trends.length+" sinais encontrados";
-  $("trend-list").innerHTML=state.trends.length?state.trends.map(t=>signalCard(t,true)).join("")
-    :'<div class="empty">Sem resultados para estes filtros. Experimenta alargar o intervalo.</div>';
+ const query=new URLSearchParams({
+   q:$("search").value,platform:$("platform-filter").value,days:$("date-filter").value,
+   saved:$("saved-only").checked?"true":"false"
+ });
+ const data=await api("/api/trends?"+query.toString());
+ state.trends=data.items||[];
+ renderTrends();
 }
 async function loadIdeas(){
   const data=await api("/api/ideas");state.ideas=data.items||[];
@@ -125,10 +231,11 @@ async function loadSources(){
 async function refreshAll(){
   await Promise.all([loadDashboard(),loadTrends(),loadIdeas(),loadSources()]);
 }
-function openGenerate(id){
+function openGenerate(id, preferredPlatform){
   const trend=state.trends.concat(state.top).find(t=>t.id===Number(id));
   if(!trend)return notify("Não foi possível encontrar a tendência.");
   $("generate-id").value=trend.id;$("generate-title").textContent=trend.title;
+  if(preferredPlatform){ $("generate-form").elements.platform.value=preferredPlatform; }
   $("generate-modal").showModal();
 }
 async function copyText(value){
@@ -141,7 +248,20 @@ function installEvents(){
     const page=event.target.closest("[data-page]");
     if(page){navigate(page.dataset.page);return;}
     const generate=event.target.closest("[data-generate]");
-    if(generate){openGenerate(generate.dataset.generate);return;}
+    if(generate){openGenerate(generate.dataset.generate,generate.dataset.platform);return;}
+    const plan=event.target.closest("[data-plan]");
+    if(plan){
+      const t=state.trends.find(v=>v.id===Number(plan.dataset.plan));
+      if(!t)return;
+      $("plan-trend-id").value=t.id;
+      $("plan-trend-title").textContent=t.title;
+      $("plan-platform").value=primaryPlatform(t)==="Geral"?"LinkedIn":primaryPlatform(t);
+      $("plan-date").value="";
+      $("plan-modal").showModal();
+      return;
+    }
+    const select=event.target.closest("[data-select]");
+    if(select){selectTrend(Number(select.dataset.select));return;}
     const saved=event.target.closest("[data-save]");
     if(saved){
       saved.disabled=true;
@@ -169,6 +289,34 @@ function installEvents(){
   $("manual-button").addEventListener("click",()=>$("manual-modal").showModal());
   $("close-manual").addEventListener("click",()=>$("manual-modal").close());
   $("close-generate").addEventListener("click",()=>$("generate-modal").close());
+  $("close-plan").addEventListener("click",()=>$("plan-modal").close());
+  $("plan-form").addEventListener("submit",async ev=>{
+    ev.preventDefault();
+    const form=ev.currentTarget,button=form.querySelector('[type="submit"]');
+    button.disabled=true;
+    try{
+      const created=await api("/api/ideas","POST",{
+        trend_id:Number($("plan-trend-id").value),
+        platform:$("plan-platform").value,use_ai:false
+      });
+      try{
+        await api("/api/ideas/"+created.id,"PATCH",{
+          scheduled_for:$("plan-date").value,status:"Backlog"
+        });
+      }catch(error){
+        $("plan-modal").close();
+        notify("Rascunho criado, mas a data não ficou guardada: "+error.message);
+        navigate("studio");
+        return;
+      }
+      $("plan-modal").close();
+      navigate("planner");
+      await loadIdeas();
+      await loadDashboard();
+      notify("Conteúdo adicionado ao Planner para "+date($("plan-date").value+"T12:00:00")+".");
+    }catch(err){errorText(err);}
+    finally{button.disabled=false;}
+  });
   $("manual-form").addEventListener("submit",async ev=>{
     ev.preventDefault();
     const form=ev.currentTarget, data=Object.fromEntries(new FormData(form));
