@@ -242,7 +242,7 @@ def sources():
 async def refresh():
     global _last_refresh
     async with _refresh_lock:
-        if time.monotonic() - _last_refresh < 90:
+        if _last_refresh and time.monotonic() - _last_refresh < 90:
             raise HTTPException(429, "Atualização recente; tenta novamente daqui a pouco.")
         _last_refresh = time.monotonic()
         async with httpx.AsyncClient(timeout=18, follow_redirects=False,
