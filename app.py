@@ -84,6 +84,8 @@ def init_db():
             id TEXT PRIMARY KEY, name TEXT NOT NULL, url TEXT NOT NULL,
             type TEXT NOT NULL, checked TEXT, result TEXT NOT NULL DEFAULT 'Por atualizar');
         """)
+        if "scheduled_for" not in [c["name"] for c in db.execute("PRAGMA table_info(ideas)")]:
+            db.execute("ALTER TABLE ideas ADD COLUMN scheduled_for TEXT NOT NULL DEFAULT ''")
         for s in SOURCES:
             db.execute("INSERT OR IGNORE INTO sources (id,name,url,type) VALUES (?,?,?,?)", (s["id"], s["name"], s["url"], s["type"]))
         if APP_ENV != "production" and os.getenv("SEED_DEMO", "true") == "true":
@@ -403,6 +405,7 @@ class IdeaUpdate(BaseModel):
     hook: str | None = Field(default=None, max_length=400)
     body: str | None = Field(default=None, max_length=4000)
     cta: str | None = Field(default=None, max_length=350)
+    scheduled_for: str | None = None
 
 
 @app.patch("/api/ideas/{idea_id}")
@@ -414,6 +417,11 @@ def update_idea(idea_id: int, body: IdeaUpdate):
         raise HTTPException(422, "Estado inválido.")
     if any(v is None for v in update.values()):
         raise HTTPException(422, "Campos não podem ser nulos.")
+    if update.get("scheduled_for"):
+        try:
+            datetime.strptime(update["scheduled_for"], "%Y-%m-%d")
+        except ValueError as exc:
+            raise HTTPException(422, "Data inválida (AAAA-MM-DD).") from exc
     fields = ", ".join(k + "=?" for k in update)
     with connection() as db:
         cur = db.execute("UPDATE ideas SET " + fields + " WHERE id=?", [*update.values(), idea_id])
