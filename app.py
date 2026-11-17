@@ -126,7 +126,7 @@ def score_trend(title: str, summary: str, published: str, source_type: str, refe
     except (ValueError, TypeError):
         age = 30
     content = (title + " " + summary).lower()
-    recency = round(40 * max(0, 1 - age / 14))
+    recency = 0 if source_type == "Manual" else round(40 * max(0, 1 - age / 14))
     authority = 30 if source_type == "Oficial" else 20 if source_type == "Imprensa" else 0
     relevance = min(20, 4 * sum(1 for word in TOPICS if word in content))
     action = 10 if any(w in content for w in ACTIONS) else 3
